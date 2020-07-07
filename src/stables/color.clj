@@ -89,6 +89,26 @@
                           (-> sat-variance (+ sat))
                           (-> val-variance (+ value))]))))))
 
+(defn shadows-for-palette
+  "Takes a HSV palette and generates shadows for it, returning a HSV
+   palette which is darker & more saturated. Return format is the
+   same as offset-palette."
+  [palette]
+  (offset-palette shadow-hue-offset
+                  shadow-sat-offset
+                  shadow-val-offset
+                  palette))
+
+(defn highlights-for-palette
+  "Takes a HSV palette and generates highlights for it, returning a HSV
+   palette which is lighter & less saturated. Return format is the same
+   as offset palette."
+  [palette]
+  (offset-palette highlight-hue-offset
+                  highlight-sat-offset
+                  highlight-val-offset
+                  palette))
+
 (defn ->rgb-with-highlights-and-shadows
   "Takes a HSV palette and generates cooler/darker shadows and warmer/
    brighter highlights as extra palettes. IMPORTANT: Returns RGB
@@ -100,16 +120,14 @@
        :highlights [#vec4 [141.2446410483278 ...]]}"
   [palette]
   {:base (->> palette (mapv #(c2d/from-HSV %)))
-   :shadows (as-> (offset-palette shadow-hue-offset
-                                  shadow-sat-offset
-                                  shadow-val-offset
-                                  palette) p
+   :shadows (as-> (shadows-for-palette palette) p
               (mapv #(c2d/from-HSV %) p)
               (c2d/adjust-temperature p :cool shadow-coolness))
-   :highlights (as-> (offset-palette highlight-hue-offset
-                                     highlight-sat-offset
-                                     highlight-val-offset
-                                     palette) p
+   :lines (->> palette
+               (shadows-for-palette)
+               (shadows-for-palette)
+               (mapv #(c2d/from-HSV %)))
+   :highlights (as-> (highlights-for-palette palette) p
                  (mapv #(c2d/from-HSV %) p)
                  (c2d/adjust-temperature p :warm highlight-warmth))})
 
