@@ -8,7 +8,8 @@
             :url "https://unlicense.org"}
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [clojure2d "1.3.1"]
-                 [com.frosku/disultory "0.1.4"]]
+                 [com.frosku/disultory "0.1.4"]
+                 [danlentz/clj-uuid "0.1.9"]]
   :repl-options {:init-ns stables.core}
   :source-paths ["src"]
   :test-paths ["t"]

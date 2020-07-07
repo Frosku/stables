@@ -1,8 +1,10 @@
 (ns stables.util.helper
   (:require [stables.color :refer :all]
+            [clj-uuid :as uuid]
             [clojure2d.color :as c]
             [clojure2d.pixels :as p]
-            [clojure2d.extra.utils :as c2deu]))
+            [clojure2d.extra.utils :as c2deu]
+            [clojure2d.core :as c2d]))
 
 (defn show-palette
   "Given a palette, renders it to a window. This is useful for
@@ -39,9 +41,15 @@
   (p/filter-colors-xy (partial blend-colors-xy
                                (clojure2d.color.blend/blends mode) p1) p2))
 
+(defn uuid
+  []
+  (-> (uuid/v4)
+     (uuid/to-string)))
+
 (defn render-pony
   [palette]
-  (let [base-colors (:base palette)
+  (let [uuid (uuid)
+        base-colors (:base palette)
         pony [[eye-white-px :white]
               [body-px (nth base-colors 0)]
               [eye-px (c/saturate (nth base-colors 2) 0.7)]
@@ -52,7 +60,7 @@
            working (second pony)
            remainder (nthnext pony 2)]
       (if (nil? working)
-        (c2deu/show-image base)
+        (c2d/save base (format "out/%s.png" uuid))
         (recur (compose-colors :normal
                                base
                                (p/filter-channels (p/tint (second working))
@@ -61,5 +69,5 @@
                (first remainder)
                (next remainder))))))
 
-(-> (random-analogous-pony-palette)
-   (render-pony))
+(dotimes [_ 100] (-> (random-triadic-pony-palette)
+                    (render-pony)))
