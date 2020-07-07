@@ -1,15 +1,18 @@
 (ns stables.color
   (:require [clojure2d.color :as c2d]))
 
-(def ^:const pastel-max-sat 0.38)
-(def ^:const pastel-value 0.79)
+(def ^:const pastel-max-sat 0.4)
+(def ^:const pastel-value 0.75)
+(def ^:const max-hue-noise 30)
+(def ^:const max-sat-noise 0.2)
+(def ^:const max-val-noise 0.15)
 (def ^:const shadow-hue-offset 0)
 (def ^:const shadow-sat-offset 0.13)
-(def ^:const shadow-val-offset -0.1)
+(def ^:const shadow-val-offset -0.2)
 (def ^:const shadow-coolness 0.25)
 (def ^:const highlight-hue-offset 0)
 (def ^:const highlight-sat-offset -0.05)
-(def ^:const highlight-val-offset 0.1)
+(def ^:const highlight-val-offset 0.15)
 (def ^:const highlight-warmth 0.25)
 
 (defn random-hue
@@ -31,7 +34,7 @@
          remaining colors
          acc []]
     (if (= 0 remaining)
-      (mapv (fn [hue] [hue (+ (/ max-sat 2) (rand (/ max-sat 2))) value]) acc)
+      (mapv (fn [hue] [hue (+ (/ max-sat 5) (rand (/ max-sat 1.2))) value]) acc)
       (recur (mod (+ current-hue angle) 255)
              (dec remaining)
              (conj acc (int current-hue))))))
@@ -89,6 +92,18 @@
                           (-> sat-variance (+ sat))
                           (-> val-variance (+ value))]))))))
 
+(defn add-noise-to-palette
+  "Generates a more random palette, making the generated ponies less
+   uniform whilst still remaining within aesthetically pleasing
+   ranges."
+  [palette]
+  (->> palette
+       (mapv 
+        #(first (offset-palette ((rand-nth [- +]) 0 (rand max-hue-noise))
+                                ((rand-nth [- +]) 0 (rand max-sat-noise))
+                                ((rand-nth [- +]) 0 (rand max-val-noise))
+                                [%])))))
+
 (defn shadows-for-palette
   "Takes a HSV palette and generates shadows for it, returning a HSV
    palette which is darker & more saturated. Return format is the
@@ -119,7 +134,7 @@
        :shadows [#vec4 [73.72730355424501 ...]]
        :highlights [#vec4 [141.2446410483278 ...]]}"
   [palette]
-  {:base (->> palette (mapv #(c2d/from-HSV %)))
+  {:base (->> palette (add-noise-to-palette) (mapv #(c2d/from-HSV %)))
    :shadows (as-> (shadows-for-palette palette) p
               (mapv #(c2d/from-HSV %) p)
               (c2d/adjust-temperature p :cool shadow-coolness))
@@ -152,5 +167,5 @@
    Output format is the same as ->rgb-with-highlights-and-shadows."
   []
   (-> (random-complementary-palette pastel-max-sat
-                                  pastel-value)
+                                   pastel-value)
      (->rgb-with-highlights-and-shadows)))
