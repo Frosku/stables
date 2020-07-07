@@ -24,8 +24,11 @@
        (c2deu/show-image)))
 
 (def eye-white-px (p/load-pixels "res/eyewhite.png"))
+(def eye-shine-px (p/load-pixels "res/eyeshine.png"))
 (def mane-tail-px (p/load-pixels "res/mane-tail-color.png"))
+(def mane-tail-accent-px (p/load-pixels "res/mane-tail-color-2.png"))
 (def eye-px (p/load-pixels "res/eye-color.png"))
+(def pupil-px (p/load-pixels "res/pupil.png"))
 (def body-px (p/load-pixels "res/body-color.png"))
 (def lines-px (p/load-pixels "res/lines.png"))
 (def mane-tail-lines-px (p/load-pixels "res/mane-tail-lines.png"))
@@ -54,7 +57,10 @@
               [body-px (nth base-colors 0)]
               [eye-px (c/saturate (nth base-colors 2) 0.7)]
               [mane-tail-px (nth base-colors 1)]
+              [mane-tail-accent-px (nth base-colors 2)]
               [lines-px (nth (:lines palette) 0)]
+              [pupil-px (c/darken (c/saturate (nth base-colors 2) 0.7) 2)]
+              [eye-shine-px :white]
               [mane-tail-lines-px (nth (:lines palette) 1)]]]
     (loop [base (first (first pony))
            working (second pony)
@@ -69,5 +75,5 @@
                (first remainder)
                (next remainder))))))
 
-(dotimes [_ 100] (-> (random-triadic-pony-palette)
-                    (render-pony)))
+(dotimes [_ 2] (-> (random-triadic-pony-palette)
+                  (render-pony)))
